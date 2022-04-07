@@ -3,23 +3,38 @@ package main
 // https://en.wikipedia.org/wiki/Kalman_filter
 //
 import (
-	    "fmt"
-		"gonum.org/v1/gonum/mat"
-   )
+	"fmt"
+	"gonum.org/v1/gonum/mat"
+	)
 
 func matPrint(X mat.Matrix) {
 	fa := mat.Formatted(X, mat.Prefix(""), mat.Squeeze())
 	fmt.Printf("%v\n", fa)
 }
 
-func predicted_cov_p(A, P, Q * mat.Dense) * mat.Dense {
-	/*
-		P -> P0.0
+// eye returns a new identity matrix of size n×n.
+func eye(n int) *mat.Dense {
+	d := make([]float64, n*n)
+	for i := 0; i < n*n; i += n + 1 {
+		d[i] = 1
+	}
+	return mat.NewDense(n, n, d)
+}
+
+/*
+	arguments
+
+		P -> P0.0 the previous updated covariance
+
 		A -> System Matrix
+	
 		Q -> covariance process noise
 
-		P1.0
-	*/
+
+	return P1.0 the predicted covariance
+*/
+func predicted_cov_p(A, P, Q * mat.Dense) * mat.Dense {
+
 	P.Product(A, P, A.T())
 	P.Add(Q,P)
 	return P
@@ -62,15 +77,6 @@ func update_estate(X, K, y_tilde *mat.Dense) *mat.Dense {
 	p.Product(K, y_tilde)
 	X.Add(X, p)
 	return X
-}
-
-// eye returns a new identity matrix of size n×n.
-func eye(n int) *mat.Dense {
-	d := make([]float64, n*n)
-	for i := 0; i < n*n; i += n + 1 {
-		d[i] = 1
-	}
-	return mat.NewDense(n, n, d)
 }
 
 func update_cov_p (P, K, H *mat.Dense) *mat.Dense{
