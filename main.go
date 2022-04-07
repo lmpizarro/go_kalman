@@ -2,6 +2,11 @@ package main
 //
 // https://en.wikipedia.org/wiki/Kalman_filter
 //
+// https://medium.com/wireless-registry-engineering/gonum-tutorial-linear-algebra-in-go-21ef136fc2d7
+//
+// https://github.com/gonum/matrix/blob/master/mat64/matrix_test.go
+//
+
 import (
 	"fmt"
 	"gonum.org/v1/gonum/mat"
