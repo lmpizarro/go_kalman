@@ -15,7 +15,8 @@ import (
 	"math/rand"
 )
 
-func matPrint(X mat.Matrix) {
+func matPrint(info string, X mat.Matrix) {
+	fmt.Println(info)
 	fa := mat.Formatted(X, mat.Prefix(""), mat.Squeeze())
 	fmt.Printf("%v\n", fa)
 }
@@ -37,14 +38,14 @@ func zero(n int) *mat.Dense {
 	return mat.NewDense(n, n, d)
 }
 
-func random_walk() float64{
+func random_walk(r_val float64) float64{
 	r := rand.Float64()
 	
 	if r < .5 {
-		return -1.0
+		return -r_val
 	}
 	
-	return 1.0
+	return r_val
 }
 /*
 	arguments
@@ -84,17 +85,19 @@ func predicted_estate(A, B, X, U * mat.Dense) * mat.Dense {
 	return x
 }
 
-func innovation_residual(M, H, X *mat.Dense) * mat.Dense {
+func innovation_residual(M, H, X *mat.Dense) (* mat.Dense, * mat.Dense) {
 	r, _ := H.Dims()
 	_, c := X.Dims()
 
 	z := mat.NewDense(r, c, []float64{0})
-	z.Product(H,X)
-	matPrint(z)
-	z.Scale(-1.0, z)
+	m := mat.NewDense(r, c, []float64{0})
+
+	m.Product(H,X)
+	// matPrint(z)
+	z.Scale(-1.0, m)
 	// a <- meas b <- HX
 	z.Add(z, M)
-	return z
+	return z, m
 }
 
 func innovation_cov(H, P10, R *mat.Dense) *mat.Dense{
@@ -143,55 +146,58 @@ func update_cov_p(P, K, H *mat.Dense) *mat.Dense{
 
 func main(){
 
-	rw := 0.0
+	measure := 0.0
 	Dt := 1.0
-	Dt1 := 1.0
+	Dt1 := 0.0
 	p1 := 5.0
 	p2 := 5.0
 	p3 := 45.0
 	p4 := 10.0
-	//  p5 := 1.0
+	p5 := 1.0
 
 	A := mat.NewDense(2, 2, []float64{1,Dt,0,1})
 	B := mat.NewDense(2, 2, []float64{0,0,0,0})
 	H := mat.NewDense(1, 2, []float64{1,0})
-	matPrint(A)
-	matPrint(B)
-	matPrint(H)
+	matPrint("A ", A)
+	matPrint("B ", B)
+	matPrint("H ", H)
 
 	U := mat.NewDense(2, 1, []float64{.5*Dt1*Dt1,Dt1})
 	Y := mat.NewDense(1, 1, []float64{2})
-	matPrint(U)
-	matPrint(Y)
+	matPrint("U ", U)
+	matPrint("Y ", Y)
 	
 	r_sys, _ := A.Dims()
 	X00 := mat.NewDense(r_sys, 1, []float64{0,0})
 
-	P00 := mat.NewDense(r_sys, r_sys, []float64{p4,0,0,p4})
+	P00 := mat.NewDense(r_sys, r_sys, []float64{p4,0,0,p5})
 	Q := mat.NewDense(r_sys, r_sys, []float64{p1*p1,p1*p2,p2*p1,p2*p2})
 	R :=  mat.NewDense(1, 1, []float64{p3})
-	matPrint(P00)
-	matPrint(Q)
-	matPrint(R)
+	matPrint("POO ", P00)
+	matPrint("Q ", Q)
+	matPrint("R ", R)
 
 	for i := 1; i < 200; i++ {
-		rw += random_walk()
-		if rw <= 0 {
-			rw = 0
+		measure += random_walk(rand.Float64())
+		if measure <= 0.0 {
+			measure = -measure
 		}
-		print(rw)
-		Y.Set(0,0, rw)
+
+		Y.Set(0,0, measure)
 		X10 := predicted_estate(A, B, X00, U)	
 		P10 := predicted_cov_p(P00, A, Q)
 
-		y_tilde := innovation_residual(Y, H, X10)
+		y_pre, m_pre := innovation_residual(Y, H, X10)
+		
 		S1 := innovation_cov(H, P10, R)
 		K1 := kalman_gain(P10, H, S1)
-		X11 := update_estate(X10, K1, y_tilde)
+		X11 := update_estate(X10, K1, y_pre)
 		P11 := update_cov_p(P10, K1, H)
 		// matPrint(K1)
-		// y_t_p = innovation_residual(Y,H, X11)
-		// matPrint(y_tilde)
+		_, m_post := innovation_residual(Y,H, X11)
+		
+		fmt.Printf("measure %e m_pre %e m_post %e\n", 
+		            measure, m_pre.At(0,0), m_post.At(0,0))
 
 		X00.Scale(1, X11)
 		P00.Scale(1,P11)
