@@ -9,8 +9,9 @@ package main
 //
 
 import (
+	"os"
 	"fmt"
-
+	"bufio"
 	"gonum.org/v1/gonum/mat"
 	"math/rand"
 )
@@ -144,16 +145,48 @@ func update_cov_p(P, K, H *mat.Dense) *mat.Dense{
 	return identity
 }
 
+func Wrt(vals, filter_out []float64, filename string) error {
+
+	f, err := os.Create(filename)
+    if err != nil {
+        return err
+    }
+    // remember to close the file
+    defer f.Close()
+	    // create new buffer
+    buffer := bufio.NewWriter(f)
+
+	buffer.WriteString("vals,out\n")
+	for i, line := range filter_out {
+		d := fmt.Sprintf("%f,%f\n", vals[i], line)
+        _, err := buffer.WriteString(d)
+        if err != nil {
+            return err
+        }
+    }
+
+    // flush buffered data to the file
+    if err := buffer.Flush(); err != nil {
+         return err
+    }
+
+	return nil
+}
+
 func main(){
 
+	size := 128
+	vals := make([]float64, size)
+	filter := make([]float64, size)
+	
 	measure := 0.0
 	Dt := 1.0
 	Dt1 := 0.0
-	p1 := 5.0
-	p2 := 5.0
-	p3 := 45.0
-	p4 := 10.0
-	p5 := 1.0
+	q1 := .3
+	q2 := .3
+	r11 := 1.2
+	p11 := 1.0
+	p12 := 1.0
 
 	A := mat.NewDense(2, 2, []float64{1,Dt,0,1})
 	B := mat.NewDense(2, 2, []float64{0,0,0,0})
@@ -170,19 +203,19 @@ func main(){
 	r_sys, _ := A.Dims()
 	X00 := mat.NewDense(r_sys, 1, []float64{0,0})
 
-	P00 := mat.NewDense(r_sys, r_sys, []float64{p4,0,0,p5})
-	Q := mat.NewDense(r_sys, r_sys, []float64{p1*p1,p1*p2,p2*p1,p2*p2})
-	R :=  mat.NewDense(1, 1, []float64{p3})
+	P00 := mat.NewDense(r_sys, r_sys, []float64{p11,0,0,p12})
+	Q := mat.NewDense(r_sys, r_sys, []float64{q1*q1,q1*q2,q2*q1,q2*q2})
+	R :=  mat.NewDense(1, 1, []float64{r11})
 	matPrint("POO ", P00)
 	matPrint("Q ", Q)
 	matPrint("R ", R)
 
-	for i := 1; i < 200; i++ {
+	for i := 1; i < size; i++ {
 		measure += random_walk(rand.Float64())
 		if measure <= 0.0 {
 			measure = -measure
 		}
-
+		vals[i] = measure
 		Y.Set(0,0, measure)
 		X10 := predicted_estate(A, B, X00, U)	
 		P10 := predicted_cov_p(P00, A, Q)
@@ -196,8 +229,11 @@ func main(){
 		// matPrint(K1)
 		_, m_post := innovation_residual(Y,H, X11)
 		
+		filter_out := m_post.At(0,0)
+		filter[i] = filter_out 
+		Wrt(vals, filter, "/home/lmpizarro/devel/project/GOLANG/indicators/pkg/go_kalman/filter.csv")
 		fmt.Printf("measure %e m_pre %e m_post %e\n", 
-		            measure, m_pre.At(0,0), m_post.At(0,0))
+		            measure, m_pre.At(0,0), filter_out)
 
 		X00.Scale(1, X11)
 		P00.Scale(1,P11)
