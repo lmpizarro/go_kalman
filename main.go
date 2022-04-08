@@ -1,4 +1,5 @@
 package main
+
 //
 // https://en.wikipedia.org/wiki/Kalman_filter
 //
@@ -9,8 +10,10 @@ package main
 
 import (
 	"fmt"
+
 	"gonum.org/v1/gonum/mat"
-	)
+	"math/rand"
+)
 
 func matPrint(X mat.Matrix) {
 	fa := mat.Formatted(X, mat.Prefix(""), mat.Squeeze())
@@ -32,6 +35,16 @@ func zero(n int) *mat.Dense {
 		d[i] = 0
 	}
 	return mat.NewDense(n, n, d)
+}
+
+func random_walk() float64{
+	r := rand.Float64()
+	
+	if r < .5 {
+		return -1.0
+	}
+	
+	return 1.0
 }
 /*
 	arguments
@@ -130,6 +143,7 @@ func update_cov_p(P, K, H *mat.Dense) *mat.Dense{
 
 func main(){
 
+	rw := 0.0
 	Dt := 1.0
 	Dt1 := 1.0
 	p1 := 5.0
@@ -161,6 +175,12 @@ func main(){
 	matPrint(R)
 
 	for i := 1; i < 200; i++ {
+		rw += random_walk()
+		if rw <= 0 {
+			rw = 0
+		}
+		print(rw)
+		Y.Set(0,0, rw)
 		X10 := predicted_estate(A, B, X00, U)	
 		P10 := predicted_cov_p(P00, A, Q)
 
