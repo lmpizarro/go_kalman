@@ -122,6 +122,16 @@ func KalmanDefault2x2() * mat.Dense {
 	return Y
 }
 
+/*
+	|p0  p1|        	|0  0|      
+A 	|      |        B	|	 |		C	|p3   p4| 
+	|0   p2|        	|0  0|
+
+	|p5p5   p5p6|      	|p7  0 |
+Q 	|			|	P 	|      |     R |p9|
+	|p5p6   p5p5|     	|0   p8|
+
+*/
 func KalmanModel2x2x10(p []float64)(* mat.Dense, error){
 
     ErrM := 	mat.NewDense(1, 1, []float64{0})
@@ -132,8 +142,8 @@ func KalmanModel2x2x10(p []float64)(* mat.Dense, error){
 	A := mat.NewDense(2, 2, []float64{p[0], p[1], 0, p[2]})
 	B := mat.NewDense(2, 2, []float64{0,0,0,0})
 	H := mat.NewDense(1, 2, []float64{p[3],p[4]})
-	P := mat.NewDense(2, 2, []float64{p[8],0,0,p[9]})
 	Q := mat.NewDense(2, 2, []float64{p[5]*p[5],p[5]*p[6],p[5]*p[5],p[5]*p[6]})
+	P := mat.NewDense(2, 2, []float64{p[8],0,0,p[9]})
 	R :=  mat.NewDense(1, 1, []float64{p[9]})
 
 	err := SetSystem(A, B, H)
