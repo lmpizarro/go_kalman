@@ -13,9 +13,14 @@ func main() {
 	cg := gecko.NewClient(nil)
 	p := make([]float64, 10)
 
-	for i := 0; i < 10; i++ {
-		p[i] = 1.0
-	}
+	p[0] = 1.0; p[1] = 1.0
+	p[2] = 1.0
+
+	p[3] = 1.0; p[4] = 0.0
+
+	p[5] = 1.0; p[6] = 1.0
+	p[7] = 1.0; p[8] = 1.0
+	p[9] = 0.5
 
 	Y, _ := gk.KalmanModel2x2x10(p)
 	for {
