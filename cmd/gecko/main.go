@@ -20,7 +20,7 @@ func main() {
 
 	p[5] = 1.0; p[6] = 1.0
 	p[7] = 1.0; p[8] = 1.0
-	p[9] = 0.5
+	p[9] = 0.4
 
 	Y, _ := gk.KalmanModel2x2x10(p)
 	for {
