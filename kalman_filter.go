@@ -123,13 +123,16 @@ func KalmanDefault2x2() * mat.Dense {
 }
 
 /*
-	|p0  p1|        	|0  0|      
-A 	|      |        B	|	 |		C	|p3   p4| 
-	|0   p2|        	|0  0|
+ 
+ A        B      C
 
-	|p5p5   p5p6|      	|p7  0 |
-Q 	|			|	P 	|      |     R |p9|
-	|p5p6   p5p5|     	|0   p8|
+ p0  p1   0  0   p3  p4     
+ 0   p2   0  0
+
+ Q			    P		  R
+
+ p5p5   p5p6    p7  0 	  p9
+ p5p6   p5p5    0   p8
 
 */
 func KalmanModel2x2x10(p []float64)(* mat.Dense, error){
