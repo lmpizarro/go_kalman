@@ -92,8 +92,8 @@ func Update(Yy *mat.Dense) *mat.Dense{
 
 func KalmanDefault2x2() * mat.Dense {
 	Dt := 1.0
-	q1 := .2
-	q2 := .2
+	q1 := 20.0
+	q2 := 20.0
 	r11 := 1.0
 	p11 := 1.0
 	p12 := 1.0
@@ -114,10 +114,39 @@ func KalmanDefault2x2() * mat.Dense {
 	if err != nil {panic("error")}
 
  	U := mat.NewDense(2, 1, []float64{.5*Dt*Dt,Dt})
-	Y := mat.NewDense(1, 1, []float64{2})
+	Y := mat.NewDense(1, 1, []float64{0})
 	X00 := mat.NewDense(r_sys, 1, []float64{0,0})
 
 	SetInitialCondition(X00, U, Y)
 
 	return Y
+}
+
+func KalmanModel2x2x10(p []float64)(* mat.Dense, error){
+
+    ErrM := 	mat.NewDense(1, 1, []float64{0})
+	if len(p) != 10 {
+		return ErrM, errors.New("bad p length")
+	}
+
+	A := mat.NewDense(2, 2, []float64{p[0], p[1], 0, p[2]})
+	B := mat.NewDense(2, 2, []float64{0,0,0,0})
+	H := mat.NewDense(1, 2, []float64{p[3],p[4]})
+	P := mat.NewDense(2, 2, []float64{p[8],0,0,p[9]})
+	Q := mat.NewDense(2, 2, []float64{p[5]*p[5],p[5]*p[6],p[5]*p[5],p[5]*p[6]})
+	R :=  mat.NewDense(1, 1, []float64{p[9]})
+
+	err := SetSystem(A, B, H)
+	if err != nil {return ErrM, errors.New("bad system")}
+
+	err = SetCovariance(Q, P, R)
+	if err != nil {return ErrM, errors.New("bad system")}
+
+ 	U := mat.NewDense(2, 1, []float64{0,0})
+	Y := mat.NewDense(1, 1, []float64{0})
+	X00 := mat.NewDense(2, 1, []float64{0,0})
+
+	SetInitialCondition(X00, U, Y)
+
+	return  Y, nil
 }
