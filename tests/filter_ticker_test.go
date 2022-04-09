@@ -16,7 +16,7 @@ func TestFilterTicker(t *testing.T) {
 	ticker := "AMZN"
 	values, _ := gk.Historical(ticker, start, end)
 
-	Y := gk.KalmanDefault()
+	Y := gk.KalmanDefault2x2()
 
 	out_vals := make([]float64, len(values))
 

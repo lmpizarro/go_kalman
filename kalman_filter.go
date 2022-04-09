@@ -15,18 +15,20 @@ var X00 * mat.Dense
 var Y * mat.Dense
 var U * mat.Dense
 
-
-
 func SetSystem(Aa, Bb, Hh * mat.Dense) error {
 
 	A = Aa
 	B = Bb
 	C = Hh
 
-	err := errors.New("Bad System")
+	ra, _ := A.Dims()
+	rb, _ := Bb.Dims() 
 
-	err = nil
-	return err
+	if ra != rb {
+		return errors.New("bad system")
+	}
+
+	return nil 
 }
 
 func SetCovariance(Qq, Pp, Rr * mat.Dense) error {
@@ -35,12 +37,15 @@ func SetCovariance(Qq, Pp, Rr * mat.Dense) error {
 	P00 = Pp
 	R = Rr
 
-	err := errors.New("Bad System")
+	ra, _ := Qq.Dims()
+	rb, _ := Pp.Dims() 
 
-	err = nil
-	return err
+	if ra != rb {
+		return errors.New("bad system")
+	}
+
+	return nil
 }
-
 
 func SetInitialCondition(Xx, Uu, Yy * mat.Dense) error {
 
@@ -48,10 +53,14 @@ func SetInitialCondition(Xx, Uu, Yy * mat.Dense) error {
 	U = Uu
 	Y = Yy
 
-	err := errors.New("Bad System")
+	rx, _ := Xx.Dims()
+	ru, _ := Uu.Dims()
 
-	err = nil
-	return err
+	if rx != ru {
+		return errors.New("bad system")
+	}
+
+	return nil
 }
 
 func KPrint(){
@@ -81,7 +90,7 @@ func Update(Yy *mat.Dense) *mat.Dense{
 	return m_post
 }
 
-func KalmanDefault() * mat.Dense {
+func KalmanDefault2x2() * mat.Dense {
 	Dt := 1.0
 	q1 := .2
 	q2 := .2
@@ -112,4 +121,3 @@ func KalmanDefault() * mat.Dense {
 
 	return Y
 }
-
