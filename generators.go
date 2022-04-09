@@ -14,11 +14,9 @@ func RandomWalk(r_val float64) float32{
 	} else {
 		RandMeasure += float32(r_val)
 	}
-
-	if RandMeasure < 0 {
-		RandMeasure *= -1.0
+	if RandMeasure < 0.0 {
+		RandMeasure = 1.0
 	}
-	
 	return RandMeasure
 }
 

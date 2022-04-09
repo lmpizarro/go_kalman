@@ -11,9 +11,9 @@ import (
 
 func TestFilter(t *testing.T) {
 	Dt := 1.0
-	q1 := .3
-	q2 := 1.0
-	r11 := 1.2
+	q1 := .5
+	q2 := .5
+	r11 := 1.0
 	p11 := 1.0
 	p12 := 1.0
 
@@ -44,15 +44,16 @@ func TestFilter(t *testing.T) {
 	vals := make([]float64, size)
 	out_vals := make([]float64, size)
 
+	gk.RandMeasure = 0.0
 	for i := 1; i < size; i++ {
-		measure += float64(gk.RandomWalk(rand.Float64()))
+		measure = float64(gk.RandomWalk(rand.Float64()))
 		vals[i] = measure
 		Y.Set(0,0, measure)
 		ypred := gk.Update(Y)
 		out_vals[i] = ypred.At(0,0)
 	}
 
-	filename := "kalman_filter"
+	filename := "kalman_filter2"
 	name := fmt.Sprintf("data/%s.csv",filename)
 
 	gk.Wrt(vals, out_vals, name)

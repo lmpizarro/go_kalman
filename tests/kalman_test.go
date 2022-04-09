@@ -8,6 +8,15 @@ import (
 		"fmt"
     )
 
+func random_walk(r_val float64) float64{
+	r := rand.Float64()
+	
+	if r < .5 {
+		return -r_val
+	}
+		
+	return r_val
+}
 func TestKalman(t *testing.T) {
 
 	size := 128
@@ -51,7 +60,11 @@ func TestKalman(t *testing.T) {
 
 	for i := 1; i < size; i++ {
 
-		measure += float64(gk.RandomWalk(rand.Float64()))
+		measure += random_walk(1.0)
+		if measure < 0.0 {
+			measure = 1.0
+		}
+		
 		vals[i] = measure
 		Y.Set(0,0, measure)
 
