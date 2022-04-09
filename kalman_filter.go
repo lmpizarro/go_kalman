@@ -81,3 +81,35 @@ func Update(Yy *mat.Dense) *mat.Dense{
 	return m_post
 }
 
+func KalmanDefault() * mat.Dense {
+	Dt := 1.0
+	q1 := .2
+	q2 := .2
+	r11 := 1.0
+	p11 := 1.0
+	p12 := 1.0
+
+	A := mat.NewDense(2, 2, []float64{1,Dt,0,1})
+	B := mat.NewDense(2, 2, []float64{0,0,0,0})
+	H := mat.NewDense(1, 2, []float64{1,0})
+	r_sys, _ := A.Dims()
+	r_out, _ := H.Dims()
+	P := mat.NewDense(r_sys, r_sys, []float64{p11,0,0,p12})
+	Q := mat.NewDense(r_sys, r_sys, []float64{q1*q1,q1*q2,q2*q1,q2*q2})
+	R :=  mat.NewDense(r_out, r_out, []float64{r11})
+
+	err := SetSystem(A, B, H)
+	if err != nil {panic("error")}
+
+	err = SetCovariance(Q, P, R)
+	if err != nil {panic("error")}
+
+ 	U := mat.NewDense(2, 1, []float64{.5*Dt*Dt,Dt})
+	Y := mat.NewDense(1, 1, []float64{2})
+	X00 := mat.NewDense(r_sys, 1, []float64{0,0})
+
+	SetInitialCondition(X00, U, Y)
+
+	return Y
+}
+
